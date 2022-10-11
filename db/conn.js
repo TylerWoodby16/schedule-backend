@@ -7,7 +7,6 @@ const client = new MongoClient(connectionString, {
 
 let dbConnection;
 
-
 module.exports = {
   connectToServer: function (callback) {
     client.connect(function (err, db) {
@@ -15,7 +14,7 @@ module.exports = {
         return callback(err);
       }
 
-      dbConnection = db.db('sample_airbnb');
+      dbConnection = db.db('scheduler');
       console.log('Successfully connected to MongoDB.');
 
       return callback();

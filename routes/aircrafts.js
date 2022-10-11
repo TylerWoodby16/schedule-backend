@@ -1,6 +1,6 @@
-var express = require("express");
-const { rawListeners } = require("../app");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
+const dbo = require('../db/conn');
 
 let aircraft1 = {
   name: "cessna",
@@ -37,9 +37,9 @@ let aircrafts = [aircraft1, aircraft2, aircraft3];
 // ]
 
 // GET /aircrafts
-router.get("/", function (req, res, next) {
-  res.send(["plane1", "plane2", "plane3"]);
-});
+// router.get("/", function (req, res, next) {
+//   res.send(["plane1", "plane2", "plane3"]);
+// });
 
 // GET /aircrafts/objects
 router.get("/objects", function (req, res, next) {
@@ -58,14 +58,17 @@ router.post("/test", function (req, res, next) {
   // We only ever want to send one response.
 });
 
-// POST /aircrafts
-router.post("/", function (req, res, next) {
-  const aircraftRequest = req.body;
-  aircrafts.push(aircraftRequest);
-  res.send(aircrafts);
+// // POST /aircrafts
+// router.post("/otherEndpoint", function (req, res, next) {
+//   // const aircraftRequest = req.body;
+//   // aircrafts.push(aircraftRequest);
+//   // res.send(aircrafts);
 
-  // We only ever want to send one response.
-});
+//   // We only ever want to send one response.
+  
+
+
+// });
 
 // PUT /aircrafts -> update an aircraft in the aircrafts array
 router.put("/:id", function (req, res, next) {
@@ -135,6 +138,48 @@ router.delete("/:id", function (req, res, next) {
   // } else {
   //   res.status(404).send("suckit");
   // }
+});
+
+router.get("/", function (req, res, next) {
+  // res.send(aircrafts);
+  const dbConnect = dbo.getDb();
+
+  dbConnect
+    .collection("aircrafts")
+    .find({}).limit(50)
+    .toArray(function (err, result) {
+      if (err) {
+        res.status(400).send("Error fetching listings!");
+     } else {
+        res.json(result);
+      }
+    });
+});
+
+router.post("/", function (req, res, next) {
+  // const aircraftRequest = req.body;
+  // aircrafts.push(aircraftRequest);
+  // res.send(aircrafts);
+
+  // We only ever want to send one response.
+  const dbConnect = dbo.getDb();
+
+  const matchDocument = {
+    ...req.body,
+  };
+
+  dbConnect
+    .collection("aircrafts")
+    .insertOne(matchDocument, function (err, result) {
+      if (err) {
+        res.status(400).send("Error inserting matches!");
+      } else {
+        console.log("NO ERROR");
+        console.log(`Added a new match with id ${result.insertedId}`);
+        res.status(204).send();
+      }
+    });
+
 });
 
 module.exports = router;
